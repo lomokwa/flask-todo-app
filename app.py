@@ -89,10 +89,13 @@ def signup():
 @login_required
 def add_task():
     form_data = request.form
-    task = Task(form_data['name'], form_data['due_date'], current_user['id'])
+
+    task = Task(form_data['name'], datetime.strptime(form_data['due_date'], '%Y-%m-%d'), current_user.id)
 
     db.session.add(task)
     db.session.commit()
+
+    return redirect(url_for('index'))
 
 @app.route("/update-task")
 def update_task():
