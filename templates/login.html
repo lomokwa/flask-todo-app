@@ -2,23 +2,25 @@
 
 {% block content %}
 
+{% if error %}
+<p>{{ error }}</p>
+{% endif %}
+
 <form method="post" action="{{ url_for('login') }}">
   <div>
-    {% if error %}
-      <p>{{ error }}</p>
-    {% endif %}
-
     <label>
       Username:
       <input type="text" name="username" required>
     </label>
   </div>
+
   <div>
     <label>
       Password:
       <input type="password" name="password" required>
     </label>
   </div>
+  
   <div>
     <label>
       Remember Me?
