@@ -69,14 +69,18 @@ def logout():
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        form_data = request.form
-        hashed_password = bcrypt.generate_password_hash(form_data['password'], 5).decode('utf-8')
-        user = User(form_data['username'], hashed_password)
+            form_data = request.form
 
-        db.session.add(user)
-        db.session.commit()
+            if User.query.where(User.username == form_data['username']).first():
+                return render_template("signup.html", error=f"User with username {form_data['username']} already exists.")
 
-        return redirect(url_for('login'))
+            hashed_password = bcrypt.generate_password_hash(form_data['password'], 5).decode('utf-8')
+            user = User(form_data['username'], hashed_password)
+
+            db.session.add(user)
+            db.session.commit()
+
+            return redirect(url_for('login'))
 
     return render_template("signup.html")
 
