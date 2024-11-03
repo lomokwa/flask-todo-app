@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import os
 from flask import Flask, redirect, url_for, render_template, request
 from flask_bcrypt import Bcrypt
@@ -54,16 +55,17 @@ def login():
     
     if request.method == 'POST':
         form_data = request.form
-        user = User.query.filter_by(username=form_data['username']).first()
+
+        user = User.query.where(User.username == form_data['username']).first()
         if user and bcrypt.check_password_hash(user.password_hash, form_data['password']):
-            login_user(user, form_data['remember'])
+            login_user(user, True if form_data.get('remember') is not None else False, timedelta(0, 1, 0, 0, 0))
             return redirect(url_for('index'))
         
         return render_template("login.html", error="Invalid username or password")
 
     return render_template("login.html")
 
-@app.route("/logout", methods=['POST'])
+@app.route("/logout", methods=['GET', 'POST'])
 def logout():
     logout_user()
     return redirect(url_for('login'))
