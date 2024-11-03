@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Flask Todo App</h1>
+
+
+<form action="">
+  <label>
+    Task Name:
+    <input type="text" name="name">
+  </label>
+  <label>
+    Due Date:
+    <input type="date" name="due_date">
+  </label>
+  <input type="submit" value="Add New Task">
+</form>
+
+{% if tasks %}
+  {% for task in tasks %}
+    <ul>{{ task['name'] }}</ul>
+    <ul>{{ task['done'] }}</ul>
+  {% endfor %}
+{% else %}  
+  <h2>No tasks added. Start by creating a new task</h2>
+{% endif %}
+{% endblock %}
