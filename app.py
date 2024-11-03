@@ -81,9 +81,14 @@ def signup():
     return render_template("signup.html")
 
 # Task routes
-@app.route("/add-task")
+@app.route("/add-task", methods=['POST'])
+@login_required
 def add_task():
-    return ""
+    form_data = request.form
+    task = Task(form_data['name'], form_data['due_date'], current_user['id'])
+
+    db.session.add(task)
+    db.session.commit()
 
 @app.route("/update-task")
 def update_task():
