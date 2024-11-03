@@ -5,7 +5,7 @@
 <h1>Flask Todo App</h1>
 
 
-<form action="">
+<form method="post" action="{{ url_for('add_task') }}">
   <label>
     Task Name:
     <input type="text" name="name">
@@ -18,10 +18,15 @@
 </form>
 
 {% if tasks %}
+<ul>
   {% for task in tasks %}
-    <ul>{{ task['name'] }}</ul>
-    <ul>{{ task['done'] }}</ul>
+    <div class="">
+      {{ task['name'] }}
+      {{ task ['due_date'] }}
+      {{ task['is_done'] }}
+    </div>
   {% endfor %}
+</ul>
 {% else %}  
   <h2>No tasks added. Start by creating a new task</h2>
 {% endif %}

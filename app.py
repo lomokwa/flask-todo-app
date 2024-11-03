@@ -42,7 +42,9 @@ tasks = [
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html", tasks=tasks, user=current_user)
+    user_tasks = Task.query.where(Task.user_id == current_user.id).order_by(Task.due_date)
+
+    return render_template("index.html", user=current_user, tasks=user_tasks)
 
 # Auth routes
 @app.route("/login", methods=['GET', 'POST'])
