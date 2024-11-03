@@ -54,7 +54,7 @@ def login():
         form_data = request.form
         user = User.query.filter_by(username=form_data['username']).first()
         if user and bcrypt.check_password_hash(user.password_hash, form_data['password']):
-            login_user(user=user, remember=form_data['remember'])
+            login_user(user, form_data['remember'])
             return redirect(url_for('index'))
         
         return render_template("login.html", error="Invalid username or password")
@@ -64,22 +64,19 @@ def login():
 @app.route("/logout", methods=['POST'])
 def logout():
     logout_user()
-    return redirect(location=url_for('login'))
+    return redirect(url_for('login'))
 
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         form_data = request.form
-        hashed_password = bcrypt.generate_password_hash(
-            password=form_data['password'], 
-            rounds=5
-        ).decode('utf-8')
-        user = User(username=form_data['username'], password_hash=hashed_password)
+        hashed_password = bcrypt.generate_password_hash(form_data['password'], 5).decode('utf-8')
+        user = User(form_data['username'], hashed_password)
 
         db.session.add(user)
         db.session.commit()
 
-        return redirect(location=url_for('login'))
+        return redirect(url_for('login'))
 
     return render_template("signup.html")
 
