@@ -2,8 +2,79 @@
 
 {% block content %}
 
-<h1>Flask Todo App</h1>
+<!-- Script to handle edit and task status updates -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.edit-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const taskDiv = this.closest('.task');
+        taskDiv.querySelector('.task-name').style.display = 'none';
+        taskDiv.querySelector('.task-name-edit').style.display = 'inline';
+        taskDiv.querySelector('.task-due-date').style.display = 'none';
+        taskDiv.querySelector('.task-due-date-edit').style.display = 'inline';
+        this.style.display = 'none';
+        taskDiv.querySelector('.save-btn').style.display = 'inline';
+      });
+    });
 
+    document.querySelectorAll('.save-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const taskDiv = this.closest('.task');
+        const taskId = taskDiv.closest('li').id;
+        const updatedName = taskDiv.querySelector('.task-name-edit').value;
+        const updatedDueDate = taskDiv.querySelector('.task-due-date-edit').value;
+
+        fetch(`/update-task/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: updatedName,
+            due_date: updatedDueDate
+          })
+        }).then(response => {
+          if (response.ok) {
+            taskDiv.querySelector('.task-name').textContent = updatedName;
+            taskDiv.querySelector('.task-due-date').textContent = updatedDueDate;
+            taskDiv.querySelector('.task-name').style.display = 'inline';
+            taskDiv.querySelector('.task-name-edit').style.display = 'none';
+            taskDiv.querySelector('.task-due-date').style.display = 'inline';
+            taskDiv.querySelector('.task-due-date-edit').style.display = 'none';
+            this.style.display = 'none';
+            taskDiv.querySelector('.edit-btn').style.display = 'inline';
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll('.status-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const taskDiv = this.closest('.task');
+        const taskId = taskDiv.closest('li').id;
+        const newStatus = this.dataset.status === 'done' ? 'not-done' : 'done';
+
+        fetch(`/update-task-status/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            is_done: newStatus === 'done'
+          })
+        }).then(response => {
+          if (response.ok) {
+            this.textContent = newStatus === 'done' ? '✔' : '';
+            this.dataset.status = newStatus;
+          }
+        });
+      });
+    });
+  });
+
+</script>
+
+<h1>Flask Todo App</h1>
 
 <form method="post" action="{{ url_for('add_task') }}">
   <label>
@@ -20,14 +91,27 @@
 {% if tasks %}
 <ul>
   {% for task in tasks %}
-    <div class="">
-      {{ task['name'] }}
-      {{ task ['due_date'] }}
-      {{ task['is_done'] }}
+  <li id="{{ task['id'] }}">
+    <div class="task">
+      {% if task.is_done %}
+      <button class="status-btn" data-status="done">✔</button>
+      {% else %}
+      <button class="status-btn" data-status="not-done"></button>
+      {% endif %}
+      
+      <span class="task-name">{{ task.name }}</span>
+      <input type="text" class="task-name-edit" value="{{ task['name'] }}" style="display:none;">
+
+      <span class="task-due-date">{{ task.due_date.strftime('%m/%d/%Y') }}</span>
+      <input type="date" class="task-due-date-edit" value="{{ task.due_date.strftime('%Y-%m-%d') }}" style="display:none;">
+
+      <button class="edit-btn">Edit</button>
+      <button class="save-btn" style="display:none;">Save</button>
     </div>
+  </li>
   {% endfor %}
 </ul>
-{% else %}  
-  <h2>No tasks added. Start by creating a new task</h2>
+{% else %}
+<h2>No tasks added. Start by creating a new task</h2>
 {% endif %}
 {% endblock %}

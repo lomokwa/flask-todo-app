@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import os
 from flask import Flask, redirect, url_for, render_template, request
+from flask.json import jsonify
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from sqlalchemy import inspect
@@ -101,9 +102,33 @@ def add_task():
 
     return redirect(url_for('index'))
 
-@app.route("/update-task")
-def update_task():
-    return ""
+@app.route("/update-task/<int:task_id>", methods=['PUT'])
+def update_task(task_id):
+    data = request.json
+    task = Task.query.where(Task.id == task_id).first()
+
+    if task:
+        task.name = data.get('name', task.name)
+        task.due_date = datetime.strptime(data.get('due_date'), '%Y-%m-%d')
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'error': 'Task not found'}), 404
+
+@app.route("/update-task-status/<int:task_id>", methods=['PUT'])
+def update_task_status(task_id):
+    data = request.json
+    task = Task.query.where(Task.id == task_id).first()
+
+    if task:
+        task.is_done = data.get('is_done', task.is_done)
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    else:
+        return jsonify({'error': 'Task not found'}), 404
+        
+        
+
 
 def init_db():
     """Initialize the database."""
