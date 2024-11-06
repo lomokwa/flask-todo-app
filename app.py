@@ -61,21 +61,40 @@ def logout():
 
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
+  error = None
+  
   if request.method == 'POST':
-    form_data = request.form
+    form_data = request.form  
+    try:
+      if not form_data.get('username'):
+        error = "Please insert a username."
+      elif not form_data.get('password'):
+        error = "Please insert a password."
+      elif User.query.filter_by(username=form_data['username'].strip()).first():
+        error = f"User with username {form_data['username']} already exists."
 
-    if User.query.where(User.username == form_data['username']).first():
-      return render_template("signup.html", error=f"User with username {form_data['username']} already exists.")
+      if not error:
+        hashed_password = bcrypt.generate_password_hash(
+            form_data['password'], 
+            5
+        ).decode('utf-8')
+        
+        user = User(
+            username=form_data['username'].strip(),
+            password_hash=hashed_password
+        )
 
-    hashed_password = bcrypt.generate_password_hash(form_data['password'], 5).decode('utf-8')
-    user = User(form_data['username'], hashed_password)
-
-    db.session.add(user)
-    db.session.commit()
-
-    return redirect(url_for('login'))
-
-  return render_template("signup.html")
+        db.session.add(user)
+        db.session.commit()
+        
+        return redirect(url_for('login'))
+              
+    except Exception as e:
+      db.session.rollback()
+      app.logger.error(f"Error during signup: {str(e)}")
+      error = "An unexpected error occurred. Please try again."
+      
+  return render_template("signup.html", error=error)
 
 # Task routes
 @app.route("/add-task", methods=['POST'])

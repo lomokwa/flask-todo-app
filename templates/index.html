@@ -7,59 +7,72 @@
   function updateTable(tasks) {
     const tbody = document.querySelector('table tbody');
     tbody.innerHTML = '';
-    
+
     tasks.forEach(task => {
       const row = document.createElement('tr');
       row.id = task.id;
-      
-      // Format the date for display
+
       const displayDate = new Date(task.due_date).toLocaleDateString('en-US');
-      const isoDate = task.due_date; // Already in YYYY-MM-DD format from server
-      
+      const isoDate = task.due_date;
+
       row.innerHTML = `
         <td>
-          <button class="status-btn" data-status="${task.is_done ? 'done' : 'not-done'}">
+          <button class="status-btn ${task.is_done ? 'btn-success' : ''}" data-status="${task.is_done ? 'done' : 'not-done'}">
             ${task.is_done ? '✔' : ''}
           </button>
         </td>
         <td>
           <span class="task-name">${task.name}</span>
-          <input type="text" class="task-name-edit" value="${task.name}" style="display:none;">
+          <input type="text" class="form-control task-name-edit" value="${task.name}" style="display:none;">
         </td>
         <td>
           <span class="task-due-date">${displayDate}</span>
-          <input type="date" class="task-due-date-edit" value="${isoDate}" style="display:none;">
+          <input type="date" class="form-control task-due-date-edit" value="${isoDate}" style="display:none;">
         </td>
         <td>
-          <button class="edit-btn">Edit</button>
-          <button class="save-btn" style="display:none;">Save</button>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-primary edit-btn">Edit</button>
+            <button class="btn btn-sm btn-success save-btn" style="display:none;">Save</button>
+            <button class="btn btn-sm btn-danger delete-btn ms-2" style="display:none;">Delete</button>
+          </div>
         </td>
       `;
       tbody.appendChild(row);
     });
-    
-    // Reattach event listeners to the new elements
+
     attachEventListeners();
   }
-  
+
   function attachEventListeners() {
-    // Edit button listeners
-    document.querySelectorAll('.edit-btn').forEach(button => {
-      button.addEventListener('click', function() {
+    // Status button listeners
+    document.querySelectorAll('.status-btn').forEach(button => {
+      button.addEventListener('click', function () {
         const taskRow = this.closest('tr');
-        taskRow.querySelector('.task-name').style.display = 'none';
-        taskRow.querySelector('.task-name-edit').style.display = 'inline';
-        taskRow.querySelector('.task-due-date').style.display = 'none';
-        taskRow.querySelector('.task-due-date-edit').style.display = 'inline';
-        this.style.display = 'none';
-        taskRow.querySelector('.save-btn').style.display = 'inline';
+        const taskId = taskRow.id;
+        const currentStatus = this.dataset.status;
+        const newStatus = currentStatus === 'done' ? 'not-done' : 'done';
+
+        fetch(`/update-task-status/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            is_done: newStatus === 'done'
+          })
+        }).then(response => {
+          if (response.ok) {
+            this.dataset.status = newStatus;
+            this.textContent = newStatus === 'done' ? '✔' : '';
+            this.classList.toggle('btn-success', newStatus === 'done');
+          }
+        });
       });
     });
-  }
 
-  document.addEventListener('DOMContentLoaded', function() {
+    // Edit button listeners
     document.querySelectorAll('.edit-btn').forEach(button => {
-      button.addEventListener('click', function() {
+      button.addEventListener('click', function () {
         const taskRow = this.closest('tr');
         taskRow.querySelector('.task-name').style.display = 'none';
         taskRow.querySelector('.task-name-edit').style.display = 'inline';
@@ -71,8 +84,9 @@
       });
     });
 
+    // Save button listeners
     document.querySelectorAll('.save-btn').forEach(button => {
-      button.addEventListener('click', function() {
+      button.addEventListener('click', function () {
         const taskRow = this.closest('tr');
         const taskId = taskRow.id;
         const updatedName = taskRow.querySelector('.task-name-edit').value;
@@ -89,12 +103,17 @@
           })
         }).then(response => {
           if (response.ok) {
+            const displayDate = new Date(updatedDueDate).toLocaleDateString('en-US');
             taskRow.querySelector('.task-name').textContent = updatedName;
-            taskRow.querySelector('.task-due-date').textContent = updatedDueDate;
+            taskRow.querySelector('.task-due-date').textContent = displayDate;
+
+            // Hide edit inputs, show display elements
             taskRow.querySelector('.task-name').style.display = 'inline';
             taskRow.querySelector('.task-name-edit').style.display = 'none';
             taskRow.querySelector('.task-due-date').style.display = 'inline';
             taskRow.querySelector('.task-due-date-edit').style.display = 'none';
+
+            // Toggle button visibility
             this.style.display = 'none';
             taskRow.querySelector('.edit-btn').style.display = 'inline';
             taskRow.querySelector('.delete-btn').style.display = 'none';
@@ -103,140 +122,147 @@
       });
     });
 
+    // Delete button listeners
     document.querySelectorAll('.delete-btn').forEach(button => {
-      button.addEventListener('click', function() {
-        const taskRow = this.closest('tr');
-        const taskId = taskRow.id;
+      button.addEventListener('click', function () {
+        if (confirm('Are you sure you want to delete this task?')) {
+          const taskRow = this.closest('tr');
+          const taskId = taskRow.id;
 
-        fetch(`/delete-task/${taskId}`, {
-          method: 'DELETE',
-          headers: {
-          'Content-Type': 'application/json'
-          },
-        }).then(response => {
-          if (response.ok) {
-            taskRow.style.display = 'none';
-          }
-        });
+          fetch(`/delete-task/${taskId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(response => {
+            if (response.ok) {
+              taskRow.remove();
+            }
+          });
+        }
       });
     });
+  }
 
-    document.querySelectorAll('.status-btn').forEach(button => {
-      button.addEventListener('click', function() {
-        const taskRow = this.closest('tr');
-        const taskId = taskRow.id;
-        const newStatus = this.dataset.status === 'done' ? 'not-done' : 'done';
-
-        fetch(`/update-task-status/${taskId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            is_done: newStatus === 'done'
-          })
-        }).then(response => {
-          if (response.ok) {
-            this.textContent = newStatus === 'done' ? '✔' : '';
-            this.dataset.status = newStatus;
-          }
-        });
-      });
-    });
-
+  document.addEventListener('DOMContentLoaded', function () {
+    // Sort button listeners
     document.querySelectorAll('.sort-btn').forEach(button => {
-      button.addEventListener('click', async function() {
+      button.addEventListener('click', async function () {
         const sortBy = this.dataset.sort;
         let order = this.dataset.order;
-        
+
         try {
           const res = await fetch(`/tasks?sort_by=${sortBy}&order=${order}`, {
             headers: {
               'X-Requested-With': 'XMLHttpRequest'
             }
           });
-  
+
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
           }
-  
+
           const tasks = await res.json();
           updateTable(tasks);
-          
-          order = order === 'asc' ? 'desc' : 'asc';
-          this.dataset.order = order;
-          
+
+          // Toggle sort order for next click
+          this.dataset.order = order === 'asc' ? 'desc' : 'asc';
+
         } catch (err) {
           console.error('Error:', err.message);
         }
       });
     });
 
+    // Initial attachment of all event listeners
+    attachEventListeners();
   });
-
 </script>
 
-<h1>Flask Todo App</h1>
+<div class="task-card">
+  <h1 class="card-title text-center mb-4">Flask Todo App</h1>
 
-<form method="post" action="{{ url_for('add_task') }}">
-  <label>
-    Task Name:
-    <input type="text" name="name">
-  </label>
-  <label>
-    Due Date:
-    <input type="date" name="due_date">
-  </label>
-  <input type="submit" value="Add New Task">
-</form>
+  <form method="post" action="{{ url_for('add_task') }}" class="form-container">
+    <div class="">
+      <label class="form-label">Task Name</label>
+      <input type="text" name="name" class="form-control" required>
+    </div>
+    <div class="">
+      <label class="form-label">Due Date</label>
+      <input type="date" name="due_date" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary new-task-btn">Add New Task</button>
+  </form>
 
-{% if tasks %}
-<table>
-  <thead>
-    <tr>
-      <th>
-          Status
-          <button class="sort-btn" data-sort="is_done" data-order="asc">sort</button>
-      </th>
-      <th>
-          Task Name
-          <button class="sort-btn" data-sort="name" data-order="asc">sort</button>
-      </th>
-      <th>
-          Due Date
-          <button class="sort-btn" data-sort="due_date" data-order="asc">sort</button>
-      </th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for task in tasks %}
-    <tr id="{{ task['id'] }}">
-      <td>
-        {% if task.is_done %}
-        <button class="status-btn" data-status="done">✔</button>
-        {% else %}
-        <button class="status-btn" data-status="not-done"></button>
-        {% endif %}
-      </td>
-      <td>
-        <span class="task-name">{{ task.name }}</span>
-        <input type="text" class="task-name-edit" value="{{ task['name'] }}" style="display:none;">
-      </td>
-      <td>
-        <span class="task-due-date">{{ task.due_date.strftime('%m/%d/%Y') }}</span>
-        <input type="date" class="task-due-date-edit" value="{{ task.due_date.strftime('%Y-%m-%d') }}" style="display:none;">
-      </td>
-      <td>
-        <button class="edit-btn">Edit</button>
-        <button class="save-btn" style="display:none;">Save</button>
-        <button class="delete-btn" style="display:none;">Delete</button>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<h2>No tasks added. Start by creating a new task</h2>
-{% endif %}
+  {% if tasks %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>
+            Status
+            <button class="sort-btn" data-sort="is_done" data-order="asc">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="7px">
+                <path
+                  d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z" />
+              </svg>
+            </button>
+          </th>
+          <th>
+            Task Name
+            <button class="sort-btn" data-sort="name" data-order="asc">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="7px">
+                <path
+                  d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z" />
+              </svg>
+            </button>
+          </th>
+          <th>
+            Due Date
+            <button class="sort-btn" data-sort="due_date" data-order="asc">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="7px">
+                <path
+                  d="M137.4 41.4c12.5-12.5 32.8-12.5 45.3 0l128 128c9.2 9.2 11.9 22.9 6.9 34.9s-16.6 19.8-29.6 19.8L32 224c-12.9 0-24.6-7.8-29.6-19.8s-2.2-25.7 6.9-34.9l128-128zm0 429.3l-128-128c-9.2-9.2-11.9-22.9-6.9-34.9s16.6-19.8 29.6-19.8l256 0c12.9 0 24.6 7.8 29.6 19.8s2.2 25.7-6.9 34.9l-128 128c-12.5 12.5-32.8 12.5-45.3 0z" />
+              </svg>
+            </button>
+          </th>
+          <th style="width: 150px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr id="{{ task['id'] }}">
+          <td>
+            <button class="status-btn {% if task.is_done %}btn-success{% endif %}"
+              data-status="{{ 'done' if task.is_done else 'not-done' }}">
+              {% if task.is_done %}✔{% endif %}
+            </button>
+          </td>
+          <td>
+            <span class="task-name">{{ task.name }}</span>
+            <input type="text" class="form-control task-name-edit" value="{{ task['name'] }}" style="display:none;">
+          </td>
+          <td>
+            <span class="task-due-date">{{ task.due_date.strftime('%m/%d/%Y') }}</span>
+            <input type="date" class="form-control task-due-date-edit" value="{{ task.due_date.strftime('%Y-%m-%d') }}"
+              style="display:none;">
+          </td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary edit-btn">Edit</button>
+              <button class="btn btn-sm btn-success save-btn" style="display:none;">Save</button>
+              <button class="btn btn-sm btn-danger delete-btn ms-2" style="display:none;">Delete</button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <h5>No tasks added. Start by creating a new task</h5>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

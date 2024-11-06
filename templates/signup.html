@@ -2,28 +2,38 @@
 
 {% block content %}
 
-{% if error %}
-<p>{{ error }}</p>
-{% endif %}
+<div class="task-card">
+      <h2 class="text-center">Create Account</h2>
 
-<form method="post" action="{{ url_for('signup') }}">
-  <div>
-    <label>
-      Username:
-      <input type="text" name="username">
-    </label>
-  </div>
-  
-  <div>
-    <label>
-      Password:
-      <input type="password" name="password" required>
-    </label>
-  </div>
+      {% if error %}
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+      {% endif %}
 
-  <input type="submit" value="Sign Up">
-</form>
+      <form method="post" action="{{ url_for('signup') }}">
+        <div class="login-form-field">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
+        </div>
 
-<p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        <div class="login-form-field">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" name="password" required
+            autocomplete="new-password">
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary login-btn">
+            Create Account
+          </button>
+        </div>
+      </form>
+
+      <p class="text-center">
+        Already have an account?
+        <a href="{{ url_for('login') }}" class="text-decoration-none">Login</a>
+      </p>
+</div>
 
 {% endblock %}

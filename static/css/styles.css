@@ -1,0 +1,72 @@
+.status-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #dee2e6;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.status-btn[data-status="done"] {
+  background: #198754;
+  border-color: #198754;
+  color: white;
+}
+
+.sort-btn {
+  border: none;
+  background: none;
+  padding: 0 4px;
+  color: #6c757d;
+}
+
+.sort-btn:hover {
+  color: #0d6efd;
+}
+
+.main-container {
+  max-width: 800px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+  gap: 10px;
+}
+
+.task-card {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+}
+
+.main-container {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.nav-item-custom {
+  list-style-type: none;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+.login-btn {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.login-form-field {
+  margin-bottom: 15px;
+}
