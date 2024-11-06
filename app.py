@@ -114,6 +114,17 @@ def update_task_status(task_id):
     return jsonify({'success': True}), 200
   else:
     return jsonify({'error': 'Task not found'}), 404
+  
+@app.route("/delete-task/<int:task_id>", methods=['DELETE'])
+def delete_task(task_id):
+  task = Task.query.where(Task.id == task_id).first()
+
+  try:
+    db.session.delete(task)
+    db.session.commit()
+    return jsonify({'success': True}), 200
+  except:
+    return jsonify({'error': 'Unable to delete task'}), 404
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
@@ -144,9 +155,6 @@ def get_tasks():
     } for task in tasks])
   
   return render_template("index.html", user=current_user, tasks=tasks)
-    
-        
-        
 
 
 def init_db():

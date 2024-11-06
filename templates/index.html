@@ -67,6 +67,7 @@
         taskRow.querySelector('.task-due-date-edit').style.display = 'inline';
         this.style.display = 'none';
         taskRow.querySelector('.save-btn').style.display = 'inline';
+        taskRow.querySelector('.delete-btn').style.display = 'inline';
       });
     });
 
@@ -96,6 +97,25 @@
             taskRow.querySelector('.task-due-date-edit').style.display = 'none';
             this.style.display = 'none';
             taskRow.querySelector('.edit-btn').style.display = 'inline';
+            taskRow.querySelector('.delete-btn').style.display = 'none';
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const taskRow = this.closest('tr');
+        const taskId = taskRow.id;
+
+        fetch(`/delete-task/${taskId}`, {
+          method: 'DELETE',
+          headers: {
+          'Content-Type': 'application/json'
+          },
+        }).then(response => {
+          if (response.ok) {
+            taskRow.style.display = 'none';
           }
         });
       });
@@ -210,6 +230,7 @@
       <td>
         <button class="edit-btn">Edit</button>
         <button class="save-btn" style="display:none;">Save</button>
+        <button class="delete-btn" style="display:none;">Delete</button>
       </td>
     </tr>
     {% endfor %}
