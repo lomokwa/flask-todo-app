@@ -3,44 +3,44 @@
 {% block content %}
 
 <div class="task-card">
-      <h2 class="text-center">Login</h2>
+  <h2 class="text-center">Login</h2>
 
-      {% if error %}
-      <div class="alert alert-danger alert-dismissable" role="alert">
-        {{ error }}
-      </div>
-      {% endif %}
+  {% if error %}
+  <div class="alert alert-danger alert-dismissable" role="alert">
+    {{ error }}
+  </div>
+  {% endif %}
 
-      <form method="post" action="{{ url_for('login') }}">
-        <div class="login-form-field">
-          <label for="username" class="form-label">Username</label>
-          <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
-        </div>
+  <form method="post" action="{{ url_for('login') }}">
+    <div class="login-form-field">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
+    </div>
 
-        <div>
-          <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" name="password" required
-            autocomplete="current-password">
-        </div>
+    <div>
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" id="password" name="password" required
+        autocomplete="current-password">
+    </div>
 
-        <div class="login-form-field">
-          <input type="checkbox" class="form-check-input" id="remember" name="remember">
-          <label class="form-check-label" for="remember">
-            Remember Me
-          </label>
-        </div>
+    <div class="login-form-field">
+      <input type="checkbox" class="form-check-input" id="remember" name="remember">
+      <label class="form-check-label" for="remember">
+        Remember Me
+      </label>
+    </div>
 
-        <div>
-          <button type="submit" class="btn btn-primary login-btn">
-            Login
-          </button>
-        </div>
-      </form>
+    <div>
+      <button type="submit" class="btn btn-primary login-btn">
+        Login
+      </button>
+    </div>
+  </form>
 
-      <p class="text-center">
-        Don't have an account?
-        <a href="{{ url_for('signup') }}" class="text-decoration-none">Sign Up</a>
-      </p>
+  <p class="text-center">
+    Don't have an account?
+    <a href="{{ url_for('signup') }}" class="text-decoration-none">Sign Up</a>
+  </p>
 </div>
 
 {% endblock %}

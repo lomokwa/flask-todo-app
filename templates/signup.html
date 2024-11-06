@@ -3,37 +3,36 @@
 {% block content %}
 
 <div class="task-card">
-      <h2 class="text-center">Create Account</h2>
+  <h2 class="text-center">Create Account</h2>
 
-      {% if error %}
-      <div class="alert alert-danger" role="alert">
-        {{ error }}
-      </div>
-      {% endif %}
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+  {% endif %}
 
-      <form method="post" action="{{ url_for('signup') }}">
-        <div class="login-form-field">
-          <label for="username" class="form-label">Username</label>
-          <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
-        </div>
+  <form method="post" action="{{ url_for('signup') }}">
+    <div class="login-form-field">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
+    </div>
 
-        <div class="login-form-field">
-          <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" name="password" required
-            autocomplete="new-password">
-        </div>
+    <div class="login-form-field">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password">
+    </div>
 
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary login-btn">
-            Create Account
-          </button>
-        </div>
-      </form>
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-primary login-btn">
+        Create Account
+      </button>
+    </div>
+  </form>
 
-      <p class="text-center">
-        Already have an account?
-        <a href="{{ url_for('login') }}" class="text-decoration-none">Login</a>
-      </p>
+  <p class="text-center">
+    Already have an account?
+    <a href="{{ url_for('login') }}" class="text-decoration-none">Login</a>
+  </p>
 </div>
 
 {% endblock %}
